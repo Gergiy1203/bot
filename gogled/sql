@@ -1,0 +1,2 @@
+connect = sqlite3.connect('database.sqlite')
+cursor = connect.cursor()
