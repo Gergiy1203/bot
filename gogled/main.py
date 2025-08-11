@@ -55,7 +55,7 @@ INSTALLED_APPS = [
 ]
 
 
-token = '6579699195:AAHH6s4_pJWipA4Ac2et6zda8tKQDyuLgdw'
+token = '0'
 url = f'https://core.telegram.org/bots/api'
 chat_id = 5776717042
 
@@ -307,3 +307,4 @@ class Middleware(BaseException):
         print(data['foo'])
         if exception:  # check for exception
             print(exception)
+
