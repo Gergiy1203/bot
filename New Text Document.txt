@@ -1,0 +1,102 @@
+#!/bin/bash
+# Автоскрипт для Tails с Docker (PostgreSQL + MongoDB + опционально Minecraft)
+# chmod +x /Persistent/scripts/setup_docker_env.sh
+
+PERSISTENT="/Persistent"
+mkdir -p "$PERSISTENT"
+
+echo "=== Запуск DevOps-скрипта Tails ==="
+
+# --- Базовые пакеты ---
+sudo apt update
+sudo apt install -y neovim git tmux htop wget curl apt-transport-https ca-certificates gnupg lsb-release
+
+# --- Docker установка ---
+if ! command -v docker &>/dev/null; then
+    echo "[*] Устанавливаю Docker..."
+    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
+      https://download.docker.com/linux/debian \
+      $(lsb_release -cs) stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt update
+    sudo apt install -y docker-ce docker-ce-cli containerd.io
+    sudo usermod -aG docker "$USER"
+else
+    echo "[OK] Docker уже установлен."
+fi
+
+# --- Конфиг NeoVim ---
+NVIM_CONFIG="$PERSISTENT/nvim-config"
+if [ ! -d "$NVIM_CONFIG" ]; then
+    mkdir -p "$NVIM_CONFIG"
+    cat > "$NVIM_CONFIG/init.vim" <<'EOF'
+set number
+syntax on
+set expandtab
+set shiftwidth=4
+set tabstop=4
+EOF
+fi
+mkdir -p ~/.config
+ln -sf "$NVIM_CONFIG" ~/.config/nvim
+
+# --- Docker Volume для PostgreSQL ---
+PG_VOL="pg_data"
+if ! docker volume ls | grep -q "$PG_VOL"; then
+    docker volume create --driver local \
+        --opt type=none \
+        --opt device="$PERSISTENT/postgresql-data" \
+        --opt o=bind \
+        "$PG_VOL"
+fi
+
+# --- Docker Volume для MongoDB ---
+MONGO_VOL="mongo_data"
+if ! docker volume ls | grep -q "$MONGO_VOL"; then
+    docker volume create --driver local \
+        --opt type=none \
+        --opt device="$PERSISTENT/mongodb-data" \
+        --opt o=bind \
+        "$MONGO_VOL"
+fi
+
+# --- Запуск PostgreSQL ---
+docker run -d \
+    --name postgres \
+    -e POSTGRES_PASSWORD=devpass \
+    -p 5432:5432 \
+    -v "$PG_VOL":/var/lib/postgresql/data \
+    postgres:16
+
+# --- Запуск MongoDB ---
+docker run -d \
+    --name mongodb \
+    -p 27017:27017 \
+    -v "$MONGO_VOL":/data/db \
+    mongo:7
+
+# --- Опционально: Minecraft Server ---
+read -p "Запустить Minecraft Server в Docker? (y/n): " MC_ANSWER
+if [[ "$MC_ANSWER" == "y" ]]; then
+    MC_VOL="mc_data"
+    if ! docker volume ls | grep -q "$MC_VOL"; then
+        docker volume create --driver local \
+            --opt type=none \
+            --opt device="$PERSISTENT/minecraft" \
+            --opt o=bind \
+            "$MC_VOL"
+    fi
+    docker run -d \
+        --name minecraft \
+        -p 25565:25565 \
+        -e EULA=TRUE \
+        -v "$MC_VOL":/data \
+        itzg/minecraft-server:latest
+fi
+
+echo "=== Всё готово! ==="
+echo "PostgreSQL: localhost:5432, user: postgres, pass: devpass"
+echo "MongoDB: localhost:27017"
+echo "Данные и контейнеры сохраняются в Persistent Storage"
