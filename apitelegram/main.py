@@ -2,69 +2,38 @@ import asyncio
 import os
 from pyrogram.raw.types import dialog
 import telebot
-import test   # noqa: F401
+import test  # noqa: F401
 from pyrogram import Client
 
 
-
-
-
-
-
-api_id = "20368885"
+api_id = "20368885"                                                    # токин и api спряч другое фаейлы 
 api_hash = "1d499a8be7aad4553d3c2395829292c6"
 token = "8225602323:AAFF0R9Pju3jRaEuWC4n_jyj18VWdb-veZU"
-
 model = ""
-
-
-
-
-
 
 
 with Client(name="my_account", api_hash=api_hash, api_id=api_id) as app:
     app.send_message("me", "Это я бот")
 
 
+# client = Mistral(api_key=api_key)          
+                                                
+                                                                         
+# chat_response = client.chat.complete(                 /// Долбан обрати внемания на эту часть кода блять пожалоста                   
+# model= model,                                         
+# messages = [                                    
+# {
+# "role": "user",
+# "content":"What is the best French cheese?"
+# },
+#   ]
+# )
 
 
-#client = Mistral(api_key=api_key)
-
-
-
-#chat_response = client.chat.complete(
-    #model= model,
-    #messages = [
-        #{
-            #"role": "user",
-            #"content":"What is the best French cheese?"
-            #},
-        #   ]
-#)
-
-
-
-
-
-
-
- # app.send_location("me", latitude, longitude)
+# app.send_location("me", latitude, longitude)
 
 
 # await app.send_cached_media("me", file_id)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 @app.on_callback_query()
@@ -94,29 +63,9 @@ async def main():
     await app.stop()
 
 
-
-
 async def main():
     async with app:
         print(await app.get_me())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 bot = telebot.TeleBot(token)
@@ -140,6 +89,21 @@ def index(request):
         update = telebot.types.Update.de_json(request.body.decode("utf-8"))
 
         bot.process_new_updates([update])
+
+
+@bot.message_handler(commands=["hi"])
+def hi(message):
+    bot.reply_to(message, "приает пользователь")
+     
+   
+
+
+@bot.message_handler(commands=["error"])
+def error(message):
+    bot.reply_to(
+        message,
+        "если я поламался на пишите моему папе об ошипке и прикрипете скрин тг для связи с нем @Bnder666",
+    )
 
 
 @bot.message_handler(commands=["teams"])

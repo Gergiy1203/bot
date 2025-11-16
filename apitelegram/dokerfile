@@ -1,2 +1,4 @@
 docker
 docker-compose.yaml
+pytelegram
+python 3.13
