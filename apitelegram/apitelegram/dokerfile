@@ -1,0 +1,18 @@
+docker
+docker-compose.yaml
+FROM pytelegram
+FROM python:3.13-slim as build
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+RUN apt-get update && \
+    
+
+
+pytest
+db
+postgeresqlserver
+gpt-oss:120b-cloud
